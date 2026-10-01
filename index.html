@@ -1,384 +1,92 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Math Havoc</title>
-  <style>
-    :root{
-      --bg:#050816;
-      --panel:rgba(10,16,39,.92);
-      --panel-2:rgba(20,28,58,.94);
-      --text:#f7fbff;
-      --muted:#a9b8d4;
-      --accent:#63e6ff;
-      --accent-2:#a46cff;
-      --good:#49ef9d;
-      --bad:#ff647c;
-      --gold:#ffd166;
-      --border:rgba(121,171,255,.25);
-    }
-
-    *{box-sizing:border-box}
-    html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-    body{overflow:hidden}
-
-    #app{
-      position:relative;
-      width:100vw;
-      height:100vh;
-      min-height:560px;
-      overflow:hidden;
-      background:
-        radial-gradient(circle at 50% 20%, rgba(57,88,180,.12), transparent 42%),
-        radial-gradient(circle at 20% 80%, rgba(140,68,255,.08), transparent 35%),
-        #050816;
-    }
-
-    canvas{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      display:block;
-      touch-action:none;
-    }
-
-    .screen{
-      position:absolute;
-      inset:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
-      z-index:5;
-      pointer-events:none;
-    }
-    .screen.hidden{display:none}
-    .panel{
-      width:min(960px,100%);
-      max-height:calc(100vh - 40px);
-      overflow:auto;
-      background:linear-gradient(180deg,rgba(9,15,35,.96),rgba(10,17,38,.94));
-      border:1px solid var(--border);
-      box-shadow:0 20px 60px rgba(0,0,0,.45), 0 0 35px rgba(99,230,255,.07);
-      border-radius:24px;
-      padding:24px;
-      pointer-events:auto;
-      backdrop-filter:blur(10px);
-      -webkit-backdrop-filter:blur(10px);
-    }
-
-    .title{
-      margin:0;
-      font-size:clamp(44px,8vw,86px);
-      letter-spacing:.04em;
-      line-height:.95;
-      text-align:center;
-      font-weight:1000;
-      text-shadow:0 0 18px rgba(99,230,255,.25);
-    }
-    .subtitle{text-align:center;color:var(--muted);margin:10px auto 24px;max-width:700px;font-size:clamp(15px,2.2vw,20px)}
-    .hero-stats{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      justify-content:center;
-      margin:0 auto 18px;
-      color:#dce8ff;
-    }
-    .pill{
-      border:1px solid var(--border);
-      background:rgba(255,255,255,.035);
-      border-radius:999px;
-      padding:8px 14px;
-      font-size:14px;
-    }
-
-    .buttons{
-      display:flex;
-      flex-wrap:wrap;
-      gap:12px;
-      justify-content:center;
-    }
-    button{
-      border:0;
-      border-radius:14px;
-      padding:12px 18px;
-      color:#061019;
-      font-weight:800;
-      font-size:15px;
-      cursor:pointer;
-      background:linear-gradient(135deg,#8cf3ff,#68d5ff);
-      box-shadow:0 8px 22px rgba(99,230,255,.18);
-      transition:transform .12s ease,filter .12s ease,opacity .12s ease;
-      user-select:none;
-      -webkit-tap-highlight-color:transparent;
-    }
-    button:hover{transform:translateY(-1px);filter:brightness(1.03)}
-    button:active{transform:translateY(1px) scale(.99)}
-    button.secondary{background:linear-gradient(135deg,#b58dff,#8662ff);color:white}
-    button.dark{background:#1c2748;color:#e9efff;box-shadow:none;border:1px solid var(--border)}
-    button.danger{background:linear-gradient(135deg,#ff8396,#ff5f76);color:#25070d}
-    button[disabled]{opacity:.45;cursor:not-allowed;transform:none}
-    button.active{outline:3px solid var(--accent);outline-offset:2px;filter:brightness(1.1)}
-
-    .section{
-      background:rgba(255,255,255,.025);
-      border:1px solid rgba(255,255,255,.07);
-      border-radius:18px;
-      padding:16px;
-      margin-top:14px;
-    }
-    .section h2,.section h3{margin:0 0 10px}
-    .small{font-size:13px;color:var(--muted)}
-    .stats-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
-      gap:10px;
-    }
-    .stat-card{
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.08);
-      padding:14px;
-      border-radius:14px;
-    }
-    .stat-label{font-size:12px;color:var(--muted)}
-    .stat-value{font-size:26px;font-weight:900;margin-top:4px}
-
-    #gameHud{
-      position:absolute;
-      top:0;left:0;right:0;
-      z-index:4;
-      padding:max(10px,env(safe-area-inset-top)) 14px 0;
-      pointer-events:none;
-    }
-    .hud-top{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      width:min(1100px,100%);
-      margin:0 auto;
-    }
-    .hud-item{
-      min-width:0;
-      padding:8px 12px;
-      border-radius:12px;
-      border:1px solid rgba(152,194,255,.17);
-      background:rgba(4,9,24,.55);
-      box-shadow:0 4px 16px rgba(0,0,0,.18);
-      backdrop-filter:blur(6px);
-      font-weight:900;
-      font-size:14px;
-    }
-    .hud-center{display:flex;gap:8px;align-items:center}
-    #lives{letter-spacing:2px}
-    #gameQuestion{
-      position:absolute;
-      left:50%;
-      transform:translateX(-50%);
-      bottom:112px;
-      width:min(92vw,680px);
-      text-align:center;
-      z-index:4;
-      pointer-events:none;
-    }
-    #questionText{
-      display:inline-block;
-      background:rgba(5,10,27,.78);
-      border:1px solid rgba(120,185,255,.22);
-      border-radius:18px;
-      padding:11px 18px;
-      font-size:clamp(20px,4vw,36px);
-      font-weight:1000;
-      box-shadow:0 10px 30px rgba(0,0,0,.24);
-      backdrop-filter:blur(6px);
-      max-width:95vw;
-      overflow-wrap:break-word;
-    }
-    #questionHint{
-      margin-top:6px;
-      color:#bcd0f6;
-      font-size:12px;
-      opacity:.82;
-    }
-
-    #fireButton{
-      position:absolute;
-      right:18px;
-      bottom:18px;
-      z-index:4;
-      padding:16px 22px;
-      min-width:120px;
-      border-radius:18px;
-      font-size:18px;
-    }
-    #backButton,#pauseButton{
-      position:absolute;
-      z-index:4;
-      top:62px;
-      padding:9px 12px;
-      pointer-events:auto;
-    }
-    #backButton{left:14px}
-    #pauseButton{right:14px}
-
-    .modal-note{
-      text-align:center;
-      margin:0 auto 20px;
-      color:var(--muted);
-      max-width:680px;
-    }
-
-    .achievement-list{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
-      gap:10px;
-    }
-    .achievement{
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:15px;
-      padding:12px;
-      background:rgba(255,255,255,.025);
-      display:flex;gap:10px;align-items:flex-start;
-      min-height:92px;
-    }
-    .achievement.locked{opacity:.42;filter:grayscale(.25)}
-    .ach-icon{
-      width:36px;height:36px;border-radius:10px;
-      display:flex;align-items:center;justify-content:center;
-      background:#182347;flex:none;font-size:20px;
-    }
-    .achievement strong{display:block;margin-bottom:4px}
-
-    .heatmap{
-      display:grid;
-      grid-template-columns:30px repeat(10,minmax(28px,1fr));
-      gap:3px;
-      font-size:11px;
-      align-items:center;
-    }
-    .heat-cell,.heat-head{
-      min-height:30px;
-      display:flex;align-items:center;justify-content:center;
-      border-radius:7px;
-    }
-    .heat-head{color:var(--muted)}
-    .heat-cell{border:1px solid rgba(255,255,255,.08);font-weight:800}
-    .heat-unknown{background:#1c2741;color:#9aaccc}
-    .heat-good{background:#174a3a;color:#caffea}
-    .heat-mid{background:#695523;color:#fff0b7}
-    .heat-bad{background:#5a2735;color:#ffdce3}
-
-    .legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px}
-    .legend span{display:flex;align-items:center;gap:6px}
-    .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
-
-    #toast{
-      position:absolute;
-      top:82px;
-      left:50%;
-      transform:translate(-50%,-20px);
-      z-index:10;
-      opacity:0;
-      pointer-events:none;
-      transition:opacity .22s ease,transform .22s ease;
-      background:linear-gradient(135deg,#ffd76a,#ffab45);
-      color:#2b1600;
-      font-weight:1000;
-      padding:12px 18px;
-      border-radius:16px;
-      box-shadow:0 12px 28px rgba(0,0,0,.3);
-      text-align:center;
-      max-width:92vw;
-    }
-    #toast.show{opacity:1;transform:translate(-50%,0)}
-
-    .gameover-score{font-size:54px;font-weight:1000;text-align:center}
-    .gameover-best{text-align:center;color:var(--muted);margin-bottom:18px}
-
-    .controls{
-      display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px
-    }
-    .control-card{
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.025);
-      padding:12px;border-radius:12px
-    }
-
-    .footer-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}
-    .warning{color:#ffd7df}
-    .success{color:#baffdf}
-
-    .mode-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
-      gap:10px;
-    }
-    .mode-card{
-      border:1px solid rgba(255,255,255,.09);
-      background:rgba(255,255,255,.025);
-      padding:14px;
-      border-radius:14px;
-      cursor:pointer;
-      transition:transform .12s ease,border-color .12s ease,background .12s ease;
-      user-select:none;
-      text-align:left;
-    }
-    .mode-card:hover{transform:translateY(-2px);border-color:rgba(99,230,255,.5)}
-    .mode-card.selected{
-      border-color:var(--accent);
-      background:rgba(99,230,255,.09);
-      box-shadow:0 0 0 2px rgba(99,230,255,.25);
-    }
-    .mode-card .mode-title{font-weight:900;font-size:16px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
-    .mode-card .mode-desc{font-size:12px;color:var(--muted);line-height:1.35}
-
-    .difficulty-row{
-      display:flex;flex-wrap:wrap;gap:10px;
-    }
-    .diff-btn{
-      flex:1 1 140px;
-      border:1px solid rgba(255,255,255,.09);
-      background:rgba(255,255,255,.025);
-      color:var(--text);
-      border-radius:14px;
-      padding:12px 14px;
-      cursor:pointer;
-      text-align:left;
-      transition:transform .12s ease,border-color .12s ease,background .12s ease;
-    }
-    .diff-btn:hover{transform:translateY(-2px);border-color:rgba(164,108,255,.6)}
-    .diff-btn.selected{
-      border-color:var(--accent-2);
-      background:rgba(164,108,255,.12);
-      box-shadow:0 0 0 2px rgba(164,108,255,.25);
-    }
-    .diff-btn .diff-title{font-weight:900;font-size:15px;margin-bottom:4px}
-    .diff-btn .diff-desc{font-size:12px;color:var(--muted)}
-
-    .mode-current{
-      text-align:center;
-      margin-bottom:14px;
-      font-size:15px;
-      color:#dbe8ff;
-    }
-    .mode-current strong{color:var(--accent)}
-
-    @media (max-width:720px){
-      #gameQuestion{bottom:104px}
-      #questionText{padding:10px 14px}
-      .hud-item{padding:7px 9px;font-size:12px}
-      #fireButton{right:12px;bottom:12px}
-      #backButton,#pauseButton{top:60px}
-    }
-
-    @media (max-height:650px){
-      #gameQuestion{bottom:90px}
-      #fireButton{padding:12px 16px;font-size:16px}
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Math Havoc</title>
+<style>
+:root{--bg:#050816;--text:#f7fbff;--muted:#a9b8d4;--accent:#63e6ff;--accent-2:#a46cff;--border:rgba(121,171,255,.25)}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+body{overflow:hidden}
+#app{position:relative;width:100vw;height:100vh;min-height:560px;overflow:hidden;background:radial-gradient(circle at 50% 20%,rgba(57,88,180,.12),transparent 42%),radial-gradient(circle at 20% 80%,rgba(140,68,255,.08),transparent 35%),#050816}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.screen{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;z-index:5;pointer-events:none}
+.hidden{display:none!important}
+.panel{width:min(960px,100%);max-height:calc(100vh - 40px);overflow:auto;background:linear-gradient(180deg,rgba(9,15,35,.96),rgba(10,17,38,.94));border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,.45),0 0 35px rgba(99,230,255,.07);border-radius:24px;padding:24px;pointer-events:auto;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.title{margin:0;font-size:clamp(44px,8vw,86px);letter-spacing:.04em;line-height:.95;text-align:center;font-weight:1000;text-shadow:0 0 18px rgba(99,230,255,.25)}
+.subtitle{text-align:center;color:var(--muted);margin:10px auto 24px;max-width:700px;font-size:clamp(15px,2.2vw,20px)}
+.hero-stats{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:0 auto 18px;color:#dce8ff}
+.pill{border:1px solid var(--border);background:rgba(255,255,255,.035);border-radius:999px;padding:8px 14px;font-size:14px}
+.buttons{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+button{border:0;border-radius:14px;padding:12px 18px;color:#061019;font-weight:800;font-size:15px;cursor:pointer;background:linear-gradient(135deg,#8cf3ff,#68d5ff);box-shadow:0 8px 22px rgba(99,230,255,.18);transition:transform .12s ease,filter .12s ease;user-select:none;-webkit-tap-highlight-color:transparent}
+button:hover{transform:translateY(-1px);filter:brightness(1.03)}
+button:active{transform:translateY(1px) scale(.99)}
+button.secondary{background:linear-gradient(135deg,#b58dff,#8662ff);color:#fff}
+button.dark{background:#1c2748;color:#e9efff;box-shadow:none;border:1px solid var(--border)}
+button.danger{background:linear-gradient(135deg,#ff8396,#ff5f76);color:#25070d}
+.section{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:16px;margin-top:14px}
+.section h2,.section h3{margin:0 0 10px}
+.small{font-size:13px;color:var(--muted)}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.stat-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);padding:14px;border-radius:14px}
+.stat-label{font-size:12px;color:var(--muted)}
+.stat-value{font-size:26px;font-weight:900;margin-top:4px}
+#gameHud{position:absolute;top:0;left:0;right:0;z-index:4;padding:max(10px,env(safe-area-inset-top)) 14px 0;pointer-events:none}
+.hud-top{display:flex;align-items:center;justify-content:space-between;gap:10px;width:min(1100px,100%);margin:0 auto}
+.hud-item{min-width:0;padding:8px 12px;border-radius:12px;border:1px solid rgba(152,194,255,.17);background:rgba(4,9,24,.55);box-shadow:0 4px 16px rgba(0,0,0,.18);backdrop-filter:blur(6px);font-weight:900;font-size:14px}
+.hud-center{display:flex;gap:8px;align-items:center}
+#lives{letter-spacing:2px}
+#gameQuestion{position:absolute;left:50%;transform:translateX(-50%);bottom:112px;width:min(92vw,680px);text-align:center;z-index:4;pointer-events:none}
+#questionText{display:inline-block;background:rgba(5,10,27,.78);border:1px solid rgba(120,185,255,.22);border-radius:18px;padding:11px 18px;font-size:clamp(20px,4vw,36px);font-weight:1000;box-shadow:0 10px 30px rgba(0,0,0,.24);backdrop-filter:blur(6px);max-width:95vw;overflow-wrap:break-word}
+#questionHint{margin-top:6px;color:#bcd0f6;font-size:12px;opacity:.82}
+#fireButton{position:absolute;right:18px;bottom:18px;z-index:4;padding:16px 22px;min-width:120px;border-radius:18px;font-size:18px}
+#backButton,#pauseButton{position:absolute;z-index:4;top:62px;padding:9px 12px;pointer-events:auto}
+#backButton{left:14px}
+#pauseButton{right:14px}
+.modal-note{text-align:center;margin:0 auto 20px;color:var(--muted);max-width:680px}
+.achievement-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.achievement{border:1px solid rgba(255,255,255,.08);border-radius:15px;padding:12px;background:rgba(255,255,255,.025);display:flex;gap:10px;align-items:flex-start;min-height:92px}
+.achievement.locked{opacity:.42;filter:grayscale(.25)}
+.ach-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#182347;flex:none;font-size:20px}
+.achievement strong{display:block;margin-bottom:4px}
+.heatmap{display:grid;grid-template-columns:30px repeat(10,minmax(28px,1fr));gap:3px;font-size:11px;align-items:center}
+.heat-cell,.heat-head{min-height:30px;display:flex;align-items:center;justify-content:center;border-radius:7px}
+.heat-head{color:var(--muted)}
+.heat-cell{border:1px solid rgba(255,255,255,.08);font-weight:800}
+.heat-unknown{background:#1c2741;color:#9aaccc}
+.heat-good{background:#174a3a;color:#caffea}
+.heat-mid{background:#695523;color:#fff0b7}
+.heat-bad{background:#5a2735;color:#ffdce3}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px}
+.legend span{display:flex;align-items:center;gap:6px}
+.dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+#toast{position:absolute;top:82px;left:50%;transform:translate(-50%,-20px);z-index:10;opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease;background:linear-gradient(135deg,#ffd76a,#ffab45);color:#2b1600;font-weight:1000;padding:12px 18px;border-radius:16px;box-shadow:0 12px 28px rgba(0,0,0,.3);text-align:center;max-width:92vw}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+.gameover-score{font-size:54px;font-weight:1000;text-align:center}
+.gameover-best{text-align:center;color:var(--muted);margin-bottom:18px}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+.control-card{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);padding:12px;border-radius:12px}
+.footer-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}
+.warning{color:#ffd7df}
+.success{color:#baffdf}
+.mode-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.mode-card{border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.025);padding:14px;border-radius:14px;cursor:pointer;transition:transform .12s ease,border-color .12s ease,background .12s ease;user-select:none;text-align:left}
+.mode-card:hover{transform:translateY(-2px);border-color:rgba(99,230,255,.5)}
+.mode-card.selected{border-color:var(--accent);background:rgba(99,230,255,.09);box-shadow:0 0 0 2px rgba(99,230,255,.25)}
+.mode-title{font-weight:900;font-size:16px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.mode-desc{font-size:12px;color:var(--muted);line-height:1.35}
+.difficulty-row{display:flex;flex-wrap:wrap;gap:10px}
+.diff-btn{flex:1 1 140px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.025);color:var(--text);border-radius:14px;padding:12px 14px;cursor:pointer;text-align:left;box-shadow:none}
+.diff-btn:hover{transform:translateY(-2px);border-color:rgba(164,108,255,.6)}
+.diff-btn.selected{border-color:var(--accent-2);background:rgba(164,108,255,.12);box-shadow:0 0 0 2px rgba(164,108,255,.25)}
+.diff-title{font-weight:900;font-size:15px;margin-bottom:4px}
+.diff-desc{font-size:12px;color:var(--muted)}
+.mode-current{text-align:center;margin-bottom:14px;font-size:15px;color:#dbe8ff}
+.mode-current strong{color:var(--accent)}
+@media (max-width:720px){#gameQuestion{bottom:104px}#questionText{padding:10px 14px}.hud-item{padding:7px 9px;font-size:12px}#fireButton{right:12px;bottom:12px}#backButton,#pauseButton{top:60px}}
+@media (max-height:650px){#gameQuestion{bottom:90px}#fireButton{padding:12px 16px;font-size:16px}}
+</style>
 </head>
 <body>
 <div id="app">
@@ -410,28 +118,16 @@
     <div class="panel">
       <h1 class="title">MATH HAVOC</h1>
       <p class="subtitle">Космическая тренировка математики. Выбери режим и сложность — и вперёд!</p>
-
       <div class="hero-stats" id="menuStats"></div>
-
-      <div class="section">
-        <h3>🎯 Что тренируем</h3>
-        <div class="mode-grid" id="modeGrid"></div>
-      </div>
-
-      <div class="section">
-        <h3>🔢 Разрядность чисел</h3>
-        <div class="difficulty-row" id="diffRow"></div>
-      </div>
-
+      <div class="section"><h3>🎯 Что тренируем</h3><div class="mode-grid" id="modeGrid"></div></div>
+      <div class="section"><h3>🔢 Разрядность чисел</h3><div class="difficulty-row" id="diffRow"></div></div>
       <div class="mode-current" id="modeCurrent"></div>
-
       <div class="buttons">
         <button id="startBtn">▶ Играть</button>
         <button id="statsBtn" class="dark">📊 Статистика</button>
         <button id="achievementsBtn" class="dark">🏆 Достижения</button>
         <button id="settingsBtn" class="dark">⚙ Настройки</button>
       </div>
-
       <div class="section">
         <h2>Как играть</h2>
         <div class="controls">
@@ -447,9 +143,7 @@
     <div class="panel">
       <h2>📊 Статистика</h2>
       <p class="modal-note">Здесь видно общий прогресс и знания таблицы умножения.</p>
-
       <div class="stats-grid" id="statsGrid"></div>
-
       <div class="section">
         <h3>Тепловая карта 1×1 … 10×10</h3>
         <div id="heatmap"></div>
@@ -460,15 +154,8 @@
           <span><i class="dot" style="background:#1c2741"></i> Ещё нет данных</span>
         </div>
       </div>
-
-      <div class="section">
-        <h3>Достижения</h3>
-        <div id="statsAchievementProgress" class="small"></div>
-      </div>
-
-      <div class="footer-actions">
-        <button id="backFromStats" class="dark">Назад</button>
-      </div>
+      <div class="section"><h3>Достижения</h3><div id="statsAchievementProgress" class="small"></div></div>
+      <div class="footer-actions"><button id="backFromStats" class="dark">Назад</button></div>
     </div>
   </section>
 
@@ -477,9 +164,7 @@
       <h2>🏆 Достижения</h2>
       <p class="modal-note">Разблокируй все награды, решая примеры без остановки.</p>
       <div id="achievementList" class="achievement-list"></div>
-      <div class="footer-actions">
-        <button id="backFromAchievements" class="dark">Назад</button>
-      </div>
+      <div class="footer-actions"><button id="backFromAchievements" class="dark">Назад</button></div>
     </div>
   </section>
 
@@ -488,9 +173,7 @@
       <h2>⚙ Настройки</h2>
       <div class="section">
         <h3>Звук</h3>
-        <div class="buttons">
-          <button id="soundToggle" class="dark">Звук: ВКЛ</button>
-        </div>
+        <div class="buttons"><button id="soundToggle" class="dark">Звук: ВКЛ</button></div>
         <p class="small">Звук работает через Web Audio API и запускается после первого взаимодействия пользователя.</p>
       </div>
       <div class="section">
@@ -498,9 +181,7 @@
         <p id="storageStatus" class="small"></p>
         <button id="resetBtn" class="danger">Сбросить прогресс</button>
       </div>
-      <div class="footer-actions">
-        <button id="backFromSettings" class="dark">Назад</button>
-      </div>
+      <div class="footer-actions"><button id="backFromSettings" class="dark">Назад</button></div>
     </div>
   </section>
 
@@ -526,28 +207,12 @@
 (() => {
   'use strict';
 
-  // =========================================================
-  // Math Havoc — один HTML-файл, без внешних библиотек
-  // =========================================================
-
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
-
   const $ = (id) => document.getElementById(id);
 
-  const screens = {
-    menu: $('menuScreen'),
-    stats: $('statsScreen'),
-    achievements: $('achievementsScreen'),
-    settings: $('settingsScreen'),
-    gameover: $('gameOverScreen')
-  };
-
-  const hud = $('gameHud');
-  const questionBox = $('gameQuestion');
-  const backButton = $('backButton');
-  const pauseButton = $('pauseButton');
-  const fireButton = $('fireButton');
+  const screens = { menu:$('menuScreen'), stats:$('statsScreen'), achievements:$('achievementsScreen'), settings:$('settingsScreen'), gameover:$('gameOverScreen') };
+  const hud = $('gameHud'), questionBox = $('gameQuestion'), backButton = $('backButton'), pauseButton = $('pauseButton'), fireButton = $('fireButton');
 
   const STORAGE_KEY = 'mathHavocSave_v2';
   const PREF_KEY = 'mathHavocPrefs_v1';
@@ -566,89 +231,44 @@
   ];
 
   const MODES = [
-    { id:'addition',       name:'Сложение',              icon:'➕', desc:'a + b = ?' },
-    { id:'subtraction',    name:'Вычитание',             icon:'➖', desc:'a − b = ?' },
-    { id:'multiplication', name:'Умножение',             icon:'✖️', desc:'a × b = ?' },
-    { id:'division',       name:'Деление',               icon:'➗', desc:'a ÷ b = ?' },
-    { id:'equationAdd',    name:'Уравнения (+, −)',      icon:'🧮', desc:'x + b = c  или  x − b = c' },
-    { id:'equationMul',    name:'Уравнения (×, ÷)',      icon:'🧠', desc:'x × b = c  или  x ÷ b = c' },
-    { id:'mixed',          name:'Смешанные примеры',     icon:'🎲', desc:'Сложение, вычитание, умножение, деление' },
-    { id:'orderOfOps',     name:'Порядок действий',      icon:'🔢', desc:'2 + 3 × 4 = ?  (со скобками и без)' }
+    { id:'addition', name:'Сложение', icon:'➕', desc:'a + b = ?' },
+    { id:'subtraction', name:'Вычитание', icon:'➖', desc:'a − b = ?' },
+    { id:'multiplication', name:'Умножение', icon:'✖️', desc:'a × b = ?' },
+    { id:'division', name:'Деление', icon:'➗', desc:'a ÷ b = ?' },
+    { id:'equationAdd', name:'Уравнения (+, −)', icon:'🧮', desc:'x + b = c  или  x − b = c' },
+    { id:'equationMul', name:'Уравнения (×, ÷)', icon:'🧠', desc:'x × b = c  или  x ÷ b = c' },
+    { id:'mixed', name:'Смешанные примеры', icon:'🎲', desc:'Сложение, вычитание, умножение, деление' },
+    { id:'orderOfOps', name:'Порядок действий', icon:'🔢', desc:'2 + 3 × 4 = ?  (со скобками и без)' }
   ];
 
   const DIFFICULTIES = [
-    { id:'single', name:'Однозначные',  icon:'1️⃣', desc:'1–9' },
-    { id:'double', name:'Двузначные',   icon:'2️⃣', desc:'10–99' },
-    { id:'triple', name:'Трёхзначные',  icon:'3️⃣', desc:'100–999' }
+    { id:'single', name:'Однозначные', icon:'1️⃣', desc:'1–9' },
+    { id:'double', name:'Двузначные', icon:'2️⃣', desc:'10–99' },
+    { id:'triple', name:'Трёхзначные', icon:'3️⃣', desc:'100–999' }
   ];
 
   const defaultSave = () => ({
-    highScore: 0,
-    level: 1,
-    correctAnswers: 0,
-    wrongAnswers: 0,
-    multiplicationStats: Array(100).fill(null).map(() => ({ correct:0, wrong:0 })),
-    unlockedAchievements: [],
-    lastGameDate: null,
-    additionSolved: 0,
-    multiplicationSolved: 0,
-    bestStreak: 0
+    highScore:0, level:1, correctAnswers:0, wrongAnswers:0,
+    multiplicationStats:Array(100).fill(null).map(() => ({ correct:0, wrong:0 })),
+    unlockedAchievements:[], lastGameDate:null, additionSolved:0, multiplicationSolved:0, bestStreak:0
   });
 
   let saveData = defaultSave();
-
-  let prefs = {
-    mode: 'addition',
-    difficulty: 'single'
-  };
+  let prefs = { mode:'addition', difficulty:'single' };
 
   let game = {
-    running: false,
-    paused: false,
-    score: 0,
-    level: 1,
-    lives: 3,
-    streak: 0,
-    levelStartLives: 3,
-    levelCorrectAtStart: 0,
-    levelNumberAtStart: 1,
-    question: null,
-    meteors: [],
-    particles: [],
-    lasers: [],
-    stars: [],
-    spawnTimer: 0,
-    spawnInterval: 1800,
-    fallSpeed: 70,
-    lastTime: 0,
-    animationId: null,
-    shake: 0,
-    pointerX: 0.5,
-    touchActive: false,
-    audioReady: false,
-    // блокировка, чтобы после выстрела не спавнить новые метеориты,
-    // пока летит снаряд и не разрешится ситуация
-    awaitingResolution: false
+    running:false, paused:false, score:0, level:1, lives:3, streak:0,
+    levelStartLives:3, levelCorrectAtStart:0, levelNumberAtStart:1,
+    question:null, meteors:[], particles:[], lasers:[], stars:[],
+    spawnTimer:0, spawnInterval:1800, fallSpeed:70, lastTime:0, animationId:null,
+    shake:0, pointerX:0.5, touchActive:false, audioReady:false
   };
 
-  let audioCtx = null;
-  let masterGain = null;
-  let storageAvailable = true;
-  let toastTimer = null;
+  let audioCtx = null, masterGain = null, storageAvailable = true, toastTimer = null;
 
-  const player = {
-    x: 0.5,
-    y: 0.9,
-    width: 48,
-    height: 62,
-    targetX: 0.5,
-    color: '#63e6ff'
-  };
+  const player = { x:0.5, y:0.9, width:48, height:62, targetX:0.5, color:'#63e6ff' };
 
-  // =========================================================
-  // LocalStorage
-  // =========================================================
-
+  // ---------- LocalStorage ----------
   function loadSave() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -656,19 +276,15 @@
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === 'object') {
           saveData = defaultSave();
-
           saveData.highScore = Number.isFinite(parsed.highScore) ? parsed.highScore : 0;
           saveData.level = Number.isFinite(parsed.level) ? Math.max(1, Math.floor(parsed.level)) : 1;
           saveData.correctAnswers = Number.isFinite(parsed.correctAnswers) ? parsed.correctAnswers : 0;
           saveData.wrongAnswers = Number.isFinite(parsed.wrongAnswers) ? parsed.wrongAnswers : 0;
-          saveData.unlockedAchievements = Array.isArray(parsed.unlockedAchievements)
-            ? parsed.unlockedAchievements.filter(id => ACHIEVEMENTS.some(a => a.id === id))
-            : [];
+          saveData.unlockedAchievements = Array.isArray(parsed.unlockedAchievements) ? parsed.unlockedAchievements.filter(id => ACHIEVEMENTS.some(a => a.id === id)) : [];
           saveData.lastGameDate = typeof parsed.lastGameDate === 'string' ? parsed.lastGameDate : null;
           saveData.additionSolved = Number.isFinite(parsed.additionSolved) ? parsed.additionSolved : 0;
           saveData.multiplicationSolved = Number.isFinite(parsed.multiplicationSolved) ? parsed.multiplicationSolved : 0;
           saveData.bestStreak = Number.isFinite(parsed.bestStreak) ? parsed.bestStreak : 0;
-
           if (Array.isArray(parsed.multiplicationStats) && parsed.multiplicationStats.length === 100) {
             saveData.multiplicationStats = parsed.multiplicationStats.map(item => ({
               correct: Number.isFinite(item?.correct) ? item.correct : 0,
@@ -681,7 +297,6 @@
       storageAvailable = false;
       console.warn('Не удалось загрузить прогресс:', err);
     }
-
     try {
       const rawPrefs = localStorage.getItem(PREF_KEY);
       if (rawPrefs) {
@@ -711,11 +326,7 @@
     }
   }
 
-  function savePrefs() {
-    try {
-      localStorage.setItem(PREF_KEY, JSON.stringify(prefs));
-    } catch {}
-  }
+  function savePrefs() { try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch {} }
 
   function resetProgress() {
     try {
@@ -723,10 +334,7 @@
       saveData = defaultSave();
       storageAvailable = true;
       showToast('Прогресс сброшен');
-      updateMenuStats();
-      renderStats();
-      renderAchievements();
-      updateStorageStatus();
+      updateMenuStats(); renderStats(); renderAchievements(); updateStorageStatus();
       setTimeout(() => location.reload(), 350);
     } catch (err) {
       storageAvailable = false;
@@ -734,21 +342,14 @@
     }
   }
 
-  // =========================================================
-  // UI helpers
-  // =========================================================
-
+  // ---------- UI helpers ----------
   function showScreen(name) {
     Object.values(screens).forEach(s => s.classList.add('hidden'));
     if (screens[name]) screens[name].classList.remove('hidden');
   }
 
   function setGameUi(visible) {
-    hud.classList.toggle('hidden', !visible);
-    questionBox.classList.toggle('hidden', !visible);
-    backButton.classList.toggle('hidden', !visible);
-    pauseButton.classList.toggle('hidden', !visible);
-    fireButton.classList.toggle('hidden', !visible);
+    [hud, questionBox, backButton, pauseButton, fireButton].forEach(el => el.classList.toggle('hidden', !visible));
   }
 
   function updateMenuStats() {
@@ -757,15 +358,14 @@
     $('menuStats').innerHTML = `
       <span class="pill">Рекорд: <strong>${saveData.highScore}</strong> очков</span>
       <span class="pill">Уровень: <strong>${saveData.level}</strong></span>
-      <span class="pill">Точность: <strong>${accuracy}%</strong></span>
-    `;
+      <span class="pill">Точность: <strong>${accuracy}%</strong></span>`;
   }
 
   function updateHud() {
     $('score').textContent = game.score;
     $('level').textContent = game.level;
     $('streak').textContent = game.streak;
-    $('lives').textContent = '♥ '.repeat(game.lives).trim() || '♡ ♡ ♡';
+    $('lives').textContent = '♥ '.repeat(Math.max(0, game.lives)).trim() || '♡ ♡ ♡';
     $('questionText').textContent = game.question ? game.question.display : '';
   }
 
@@ -775,19 +375,14 @@
       status.textContent = 'Автосохранение недоступно в этом браузере или режиме. Игра продолжит работать, но прогресс может не сохраниться.';
       status.className = 'small warning';
     } else {
-      status.textContent = saveData.lastGameDate
-        ? `Прогресс сохраняется автоматически. Последняя игра: ${formatDate(saveData.lastGameDate)}`
-        : 'Прогресс будет сохраняться автоматически.';
+      status.textContent = saveData.lastGameDate ? `Прогресс сохраняется автоматически. Последняя игра: ${formatDate(saveData.lastGameDate)}` : 'Прогресс будет сохраняться автоматически.';
       status.className = 'small success';
     }
   }
 
   function formatDate(value) {
-    try {
-      return new Intl.DateTimeFormat('ru-RU', { dateStyle:'medium', timeStyle:'short' }).format(new Date(value));
-    } catch {
-      return value;
-    }
+    try { return new Intl.DateTimeFormat('ru-RU', { dateStyle:'medium', timeStyle:'short' }).format(new Date(value)); }
+    catch { return value; }
   }
 
   function showToast(message) {
@@ -798,10 +393,7 @@
     toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
   }
 
-  // =========================================================
-  // Web Audio API
-  // =========================================================
-
+  // ---------- Web Audio ----------
   function ensureAudio() {
     if (!soundEnabled()) return;
     try {
@@ -813,18 +405,11 @@
       }
       if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
       game.audioReady = true;
-    } catch {
-      game.audioReady = false;
-    }
+    } catch { game.audioReady = false; }
   }
 
-  function soundEnabled() {
-    return localStorageSafeGet('mathHavocSound') !== 'off';
-  }
-
-  function localStorageSafeGet(key) {
-    try { return localStorage.getItem(key); } catch { return null; }
-  }
+  function soundEnabled() { return localStorageSafeGet('mathHavocSound') !== 'off'; }
+  function localStorageSafeGet(key) { try { return localStorage.getItem(key); } catch { return null; } }
 
   function setSoundEnabled(enabled) {
     try { localStorage.setItem('mathHavocSound', enabled ? 'on' : 'off'); } catch {}
@@ -832,26 +417,21 @@
     if (enabled) ensureAudio();
   }
 
-  function updateSoundButton() {
-    $('soundToggle').textContent = `Звук: ${soundEnabled() ? 'ВКЛ' : 'ВЫКЛ'}`;
-  }
+  function updateSoundButton() { $('soundToggle').textContent = `Звук: ${soundEnabled() ? 'ВКЛ' : 'ВЫКЛ'}`; }
 
   function playTone(freq, duration, type='sine', volume=0.4, slide=0) {
     if (!soundEnabled()) return;
     ensureAudio();
     if (!audioCtx || !masterGain) return;
-
     try {
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = type;
       osc.frequency.value = freq;
       if (slide !== 0) osc.frequency.linearRampToValueAtTime(Math.max(40, freq + slide), audioCtx.currentTime + duration);
-
       gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume), audioCtx.currentTime + 0.01);
       gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-
       osc.connect(gain);
       gain.connect(masterGain);
       osc.start();
@@ -868,17 +448,10 @@
       playTone(140, 0.18, 'sawtooth', 0.42, -60);
     }
   }
-  function playLevelSound() {
-    [520,660,820].forEach((f,i) => setTimeout(() => playTone(f,0.14,'triangle',0.35,0), i*70));
-  }
+  function playLevelSound() { [520,660,820].forEach((f,i) => setTimeout(() => playTone(f,0.14,'triangle',0.35,0), i*70)); }
 
-  // =========================================================
-  // Math generation
-  // =========================================================
-
-  function randomInt(min,max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
+  // ---------- Math generation ----------
+  function randomInt(min,max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
   function numberRange(difficulty) {
     if (difficulty === 'single') return { min:1, max:9 };
@@ -892,17 +465,12 @@
     return { min:3, max:30 };
   }
 
-  // === ИЗМЕНЕНО: количество метеоритов 3 → 4 → 5, не больше 5 ===
+  // Метеоритов: 1 уровень — 3, 2 уровень — 4, с 3 уровня — 5 (максимум)
   function levelConfig(level) {
-    let meteors;
-    if (level <= 1) meteors = 3;
-    else if (level <= 3) meteors = 4;
-    else meteors = 5;
-
-    const minSpeed = 95 + Math.max(0, level - 1) * 12;
-    const spawn = Math.max(900, 1500 - Math.max(0, level - 1) * 60);
-
-    return { minSpeed, spawn, meteors };
+    const meteors = level <= 1 ? 3 : level === 2 ? 4 : 5;
+    if (level <= 2) return { minSpeed:95,  spawn:1500, meteors };
+    if (level <= 4) return { minSpeed:120, spawn:1350, meteors };
+    return { minSpeed:150, spawn:1150, meteors };
   }
 
   function makeQuestion(mode, difficulty) {
@@ -910,173 +478,84 @@
 
     switch (mode) {
       case 'addition': {
-        const a = randomInt(range.min, range.max);
-        const b = randomInt(range.min, range.max);
-        return {
-          type:'addition',
-          a, b, op:'+',
-          answer:a+b,
-          display:`${a} + ${b} = ?`,
-          multIndex:null
-        };
+        const a = randomInt(range.min, range.max), b = randomInt(range.min, range.max);
+        return { type:'addition', a, b, op:'+', answer:a+b, display:`${a} + ${b} = ?`, multIndex:null };
       }
-
       case 'subtraction': {
-        let a = randomInt(range.min, range.max);
-        let b = randomInt(range.min, range.max);
+        let a = randomInt(range.min, range.max), b = randomInt(range.min, range.max);
         if (b > a) [a, b] = [b, a];
-        return {
-          type:'subtraction',
-          a, b, op:'−',
-          answer:a-b,
-          display:`${a} − ${b} = ?`,
-          multIndex:null
-        };
+        return { type:'subtraction', a, b, op:'−', answer:a-b, display:`${a} − ${b} = ?`, multIndex:null };
       }
-
       case 'multiplication': {
         const mr = mulRange(difficulty);
-        const a = randomInt(mr.min, mr.max);
-        const b = randomInt(mr.min, mr.max);
-        return {
-          type:'multiplication',
-          a, b, op:'×',
-          answer:a*b,
-          display:`${a} × ${b} = ?`,
-          multIndex:(a<=10 && b<=10) ? (a-1)*10+(b-1) : null
-        };
+        const a = randomInt(mr.min, mr.max), b = randomInt(mr.min, mr.max);
+        return { type:'multiplication', a, b, op:'×', answer:a*b, display:`${a} × ${b} = ?`, multIndex:(a<=10 && b<=10) ? (a-1)*10+(b-1) : null };
       }
-
       case 'division': {
         const mr = mulRange(difficulty);
         const divisor = randomInt(Math.max(2,mr.min), mr.max);
         const quotient = randomInt(Math.max(2,mr.min), mr.max);
         const dividend = divisor * quotient;
-        return {
-          type:'division',
-          a:dividend, b:divisor, op:'÷',
-          answer:quotient,
-          display:`${dividend} ÷ ${divisor} = ?`,
-          multIndex:(divisor<=10 && quotient<=10) ? (divisor-1)*10+(quotient-1) : null
-        };
+        return { type:'division', a:dividend, b:divisor, op:'÷', answer:quotient, display:`${dividend} ÷ ${divisor} = ?`, multIndex:(divisor<=10 && quotient<=10) ? (divisor-1)*10+(quotient-1) : null };
       }
-
       case 'equationAdd': {
-        const useSub = Math.random() < 0.5;
-        if (!useSub) {
-          const x = randomInt(range.min, range.max);
-          const b = randomInt(range.min, range.max);
-          const c = x + b;
-          return {
-            type:'equationAdd',
-            a:x, b, op:'+',
-            answer:x,
-            display:`x + ${b} = ${c}.  Чему равен x?`,
-            multIndex:null
-          };
+        if (Math.random() >= 0.5) {
+          const x = randomInt(range.min, range.max), b = randomInt(range.min, range.max);
+          return { type:'equationAdd', a:x, b, op:'+', answer:x, display:`x + ${b} = ${x + b}.  Чему равен x?`, multIndex:null };
         } else {
           const b = randomInt(range.min, range.max);
           const x = randomInt(range.min + b, range.max + b);
-          const c = x - b;
-          return {
-            type:'equationAdd',
-            a:x, b, op:'−',
-            answer:x,
-            display:`x − ${b} = ${c}.  Чему равен x?`,
-            multIndex:null
-          };
+          return { type:'equationAdd', a:x, b, op:'−', answer:x, display:`x − ${b} = ${x - b}.  Чему равен x?`, multIndex:null };
         }
       }
-
       case 'equationMul': {
-        const useDiv = Math.random() < 0.5;
         const mr = mulRange(difficulty);
-        if (!useDiv) {
-          const x = randomInt(mr.min, mr.max);
-          const b = randomInt(mr.min, mr.max);
-          const c = x * b;
-          return {
-            type:'equationMul',
-            a:x, b, op:'×',
-            answer:x,
-            display:`x × ${b} = ${c}.  Чему равен x?`,
-            multIndex:(x<=10 && b<=10) ? (x-1)*10+(b-1) : null
-          };
+        if (Math.random() >= 0.5) {
+          const x = randomInt(mr.min, mr.max), b = randomInt(mr.min, mr.max);
+          return { type:'equationMul', a:x, b, op:'×', answer:x, display:`x × ${b} = ${x * b}.  Чему равен x?`, multIndex:(x<=10 && b<=10) ? (x-1)*10+(b-1) : null };
         } else {
           const b = randomInt(Math.max(2,mr.min), mr.max);
           const x = randomInt(mr.min, mr.max);
           const dividend = b * x;
-          return {
-            type:'equationMul',
-            a:dividend, b, op:'÷',
-            answer:x,
-            display:`${dividend} ÷ x = ${x}.  Чему равен x?`,
-            multIndex:(b<=10 && x<=10) ? (b-1)*10+(x-1) : null
-          };
+          return { type:'equationMul', a:dividend, b, op:'÷', answer:x, display:`${dividend} ÷ x = ${b}.  Чему равен x?`, multIndex:(b<=10 && x<=10) ? (b-1)*10+(x-1) : null };
         }
       }
-
       case 'mixed': {
         const modes = ['addition','subtraction','multiplication','division'];
-        const pick = modes[randomInt(0,modes.length-1)];
-        return makeQuestion(pick, difficulty);
+        return makeQuestion(modes[randomInt(0,modes.length-1)], difficulty);
       }
-
       case 'orderOfOps': {
         const mr = mulRange(difficulty);
         const a = randomInt(range.min, Math.min(range.max, difficulty==='single'?9:20));
         const b = randomInt(mr.min, Math.min(mr.max, 9));
         const c = randomInt(mr.min, Math.min(mr.max, 9));
-        const withBrackets = Math.random() < 0.5;
-        if (withBrackets) {
-          const answer = (a + b) * c;
-          return {
-            type:'orderOfOps',
-            a, b, op:'×',
-            answer,
-            display:`(${a} + ${b}) × ${c} = ?`,
-            multIndex:null
-          };
-        } else {
-          const answer = a + b * c;
-          return {
-            type:'orderOfOps',
-            a, b, op:'+',
-            answer,
-            display:`${a} + ${b} × ${c} = ?`,
-            multIndex:null
-          };
+        if (Math.random() < 0.5) {
+          return { type:'orderOfOps', a, b, op:'×', answer:(a + b) * c, display:`(${a} + ${b}) × ${c} = ?`, multIndex:null };
         }
+        return { type:'orderOfOps', a, b, op:'+', answer:a + b * c, display:`${a} + ${b} × ${c} = ?`, multIndex:null };
       }
-
-      default: {
+      default:
         return makeQuestion('addition', difficulty);
-      }
     }
   }
 
   function answerVariants(question, difficulty) {
-    // нужно столько же вариантов, сколько метеоритов
     const needed = levelConfig(game.level).meteors;
     const values = new Set([question.answer]);
-    const span = (() => {
-      if (difficulty === 'single') return 8;
-      if (difficulty === 'double') return 25;
-      return 120;
-    })();
+    const span = difficulty === 'single' ? 8 : difficulty === 'double' ? 25 : 120;
 
     let guard = 0;
-    while (values.size < needed && guard < 300) {
+    while (values.size < needed && guard < 400) {
       guard++;
       let candidate;
       if (question.type === 'multiplication' || question.type === 'division' || question.type === 'equationMul') {
-        candidate = Math.max(1, question.answer + randomInt(-Math.max(3, Math.round(question.answer*0.2)), Math.max(3, Math.round(question.answer*0.2))));
+        const d = Math.max(3, Math.round(question.answer * 0.2));
+        candidate = Math.max(1, question.answer + randomInt(-d, d));
       } else {
         candidate = Math.max(0, question.answer + randomInt(-span, span));
       }
       if (candidate !== question.answer && Number.isFinite(candidate)) values.add(candidate);
     }
-
     return [...values].sort(() => Math.random() - 0.5);
   }
 
@@ -1086,46 +565,31 @@
     updateHud();
   }
 
-  // =========================================================
-  // Canvas / stars
-  // =========================================================
-
+  // ---------- Canvas / stars ----------
   function resizeCanvas() {
     const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
     const rect = canvas.getBoundingClientRect();
     canvas.width = Math.max(1, Math.floor(rect.width * dpr));
     canvas.height = Math.max(1, Math.floor(rect.height * dpr));
     ctx.setTransform(dpr,0,0,dpr,0,0);
-
     game.stars = createStars(Math.max(80, Math.floor((rect.width * rect.height) / 14000)));
   }
 
   function createStars(count) {
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
     const stars = [];
     for (let i=0;i<count;i++) {
-      stars.push({
-        x:Math.random()*w,
-        y:Math.random()*h,
-        r:Math.random()*1.6+0.2,
-        speed:Math.random()*18+5,
-        alpha:Math.random()*0.75+0.2,
-        phase:Math.random()*Math.PI*2
-      });
+      stars.push({ x:Math.random()*w, y:Math.random()*h, r:Math.random()*1.6+0.2, speed:Math.random()*18+5, alpha:Math.random()*0.75+0.2, phase:Math.random()*Math.PI*2 });
     }
     return stars;
   }
 
-  // =========================================================
-  // Game setup
-  // =========================================================
-
+  // ---------- Game setup ----------
   function startGame() {
     ensureAudio();
-
     game.running = true;
     game.paused = false;
+    pauseButton.textContent = 'Пауза';
     game.score = 0;
     game.level = Math.max(1, saveData.level);
     game.lives = 3;
@@ -1139,18 +603,15 @@
     game.spawnTimer = 0;
     game.lastTime = performance.now();
     game.shake = 0;
-    game.awaitingResolution = false;
 
-    const cfg = levelConfig(game.level);
-    game.fallSpeed = cfg.minSpeed;
-    game.spawnInterval = cfg.spawn;
+    updateDifficulty();
 
     player.x = 0.5;
     player.targetX = 0.5;
-    nextQuestion();
-
     Object.values(screens).forEach(s => s.classList.add('hidden'));
     setGameUi(true);
+    resizeCanvas();
+    nextQuestion();
     updateHud();
   }
 
@@ -1160,12 +621,8 @@
     game.meteors = [];
     game.particles = [];
     game.lasers = [];
-    game.awaitingResolution = false;
     setGameUi(false);
-    if (toMenu) {
-      showScreen('menu');
-      updateMenuStats();
-    }
+    if (toMenu) { showScreen('menu'); updateMenuStats(); }
   }
 
   function gameOver() {
@@ -1188,95 +645,55 @@
     showScreen('gameover');
   }
 
-  // =========================================================
-  // Meteor spawning
-  // =========================================================
-
-  // Ищем X-координату с учётом уже занятых позиций
-  function pickMeteorX(takenXs, minGap) {
-    const minX = 0.10;
-    const maxX = 0.90;
-    let bestX = null;
-    let bestScore = -Infinity;
-
-    // несколько попыток случайного поиска
-    for (let attempt = 0; attempt < 60; attempt++) {
-      const x = minX + Math.random() * (maxX - minX);
-      let minDist = Infinity;
-      for (const tx of takenXs) minDist = Math.min(minDist, Math.abs(tx - x));
-      if (minDist >= minGap) return x;
-      if (minDist > bestScore) { bestScore = minDist; bestX = x; }
-    }
-
-    // fallback: сетка
-    const step = (maxX - minX) / Math.max(1, takenXs.length + 1);
-    for (let i = 1; i <= takenXs.length + 1; i++) {
-      const x = minX + step * i;
-      let minDist = Infinity;
-      for (const tx of takenXs) minDist = Math.min(minDist, Math.abs(tx - x));
-      if (minDist >= minGap) return x;
-    }
-
-    return bestX !== null ? bestX : minX + Math.random() * (maxX - minX);
-  }
-
+  // ---------- Meteor spawning (равномерные «дорожки» — без наложений) ----------
   function spawnMeteors() {
     game.meteors = [];
-    const cfg = levelConfig(game.level);
-    const values = answerVariants(game.question, prefs.difficulty);
-    const count = cfg.meteors;
+    game.lasers = []; // снаряды предыдущего вопроса не должны задевать новые метеориты
+    const w = canvas.clientWidth;
+    const count = levelConfig(game.level).meteors;
+    const values = answerVariants(game.question, prefs.difficulty).slice(0, count);
+    const n = values.length;
+    if (!n) return;
 
-    // minGap подбираем так, чтобы count метеоритов точно поместились на [0.10; 0.90]
-    const usableWidth = 0.80;
-    const minGap = Math.min(0.20, usableWidth / Math.max(1, count - 1) * 0.95);
+    // Радиус подбирается так, чтобы метеориты гарантированно помещались по ширине
+    const r = Math.max(14, Math.min(34, (w - 6) / (2 * n) - 3));
+    const s0 = n > 1 ? (w - 2 * (r + 6)) / (n - 1) : 0;
+    const jitter = Math.max(0, Math.min(14, (s0 - 2 * r - 6) / 4));
+    const start = r + 6 + jitter;
+    const step = n > 1 ? (w - 2 * start) / (n - 1) : 0;
 
-    const xs = [];
-    for (let i = 0; i < count; i++) {
-      const x = pickMeteorX(xs, minGap);
-      xs.push(x);
-    }
-    xs.sort((a,b)=>a-b);
-
-    values.slice(0,count).forEach((value, index) => {
+    values.forEach((value, i) => {
+      const cx = n > 1 ? start + i * step + (Math.random() * 2 - 1) * jitter : w / 2;
       game.meteors.push({
         value,
-        x:xs[index],
-        y:-0.08 - Math.random()*0.2,
-        radius:30 + Math.random()*6,
-        speed:game.fallSpeed*(0.9+Math.random()*0.22),
-        hue:Math.random()*360,
-        rotation:Math.random()*Math.PI*2,
-        spin:(Math.random()-.5)*0.5,
-        dying:false
+        x: cx / w,
+        y: -0.08 - Math.random() * 0.2,
+        radius: r,
+        speed: game.fallSpeed * (0.9 + Math.random() * 0.22),
+        hue: Math.random() * 360,
+        rotation: Math.random() * Math.PI * 2,
+        spin: (Math.random() - .5) * 0.5
       });
     });
   }
 
-  // =========================================================
-  // Level logic
-  // =========================================================
-
+  // ---------- Level logic ----------
   function updateDifficulty() {
     const cfg = levelConfig(game.level);
-    game.fallSpeed = cfg.minSpeed;
-    game.spawnInterval = cfg.spawn;
+    game.fallSpeed = cfg.minSpeed + (game.level >= 5 ? (game.level-5)*10 : (game.level-1)*8);
+    game.spawnInterval = Math.max(800, cfg.spawn - Math.max(0,game.level-1)*50);
   }
 
   function advanceLevel() {
-    if (game.lives === game.levelStartLives) {
-      unlockAchievement('perfectLevel');
-    }
-
+    if (game.lives === game.levelStartLives) unlockAchievement('perfectLevel');
     game.level += 1;
     saveData.level = Math.max(saveData.level, game.level);
     updateDifficulty();
     saveProgress(true);
-    unlockAchievement('survivor');
+    if (game.level >= 5) unlockAchievement('survivor');
     playLevelSound();
     showToast(`Уровень ${game.level}! Скорость растёт 🚀`);
     game.levelStartLives = game.lives;
-
-    game.awaitingResolution = false;
     nextQuestion();
   }
 
@@ -1287,16 +704,10 @@
     game.shake = 10;
     showToast(reason || 'Промах! Минус жизнь');
     updateHud();
-
-    if (game.lives <= 0) {
-      gameOver();
-    }
+    if (game.lives <= 0) gameOver();
   }
 
-  // =========================================================
-  // Answer tracking + achievements
-  // =========================================================
-
+  // ---------- Answer tracking + achievements ----------
   function registerAnswer(correct, question) {
     if (correct) {
       saveData.correctAnswers += 1;
@@ -1317,16 +728,12 @@
       if (game.streak >= 40) unlockAchievement('comboKing');
       if (saveData.additionSolved >= 100) unlockAchievement('additionMaster');
       if (saveData.multiplicationSolved >= 100) unlockAchievement('multiplicationMaster');
-
       if (game.score >= 1000) unlockAchievement('score1000');
       if (game.score >= 5000) unlockAchievement('legend');
     } else {
       saveData.wrongAnswers += 1;
       game.streak = 0;
-      if (question.type === 'multiplication' &&
-          Number.isInteger(question.multIndex) &&
-          question.multIndex >= 0 &&
-          question.multIndex < 100) {
+      if (question.type === 'multiplication' && Number.isInteger(question.multIndex) && question.multIndex >= 0 && question.multIndex < 100) {
         saveData.multiplicationStats[question.multIndex].wrong += 1;
       }
     }
@@ -1341,89 +748,52 @@
     if (saveData.unlockedAchievements.includes(id)) return;
     const achievement = ACHIEVEMENTS.find(a => a.id === id);
     if (!achievement) return;
-
     saveData.unlockedAchievements.push(id);
     saveProgress(true);
     showToast(`🏆 ${achievement.name}`);
   }
 
-  // =========================================================
-  // Shooting / collision
-  // =========================================================
-
-  // Лазер летит от пушки вверх и «врезается» в первый метеорит,
-  // который окажется на его пути. Только тогда происходит взрыв.
+  // ---------- Shooting / collision ----------
+  // Снаряд теперь реально летит; попадание засчитывается, когда он касается метеорита.
   function shoot() {
-    if (!game.running || game.paused || game.awaitingResolution) return;
+    if (!game.running || game.paused) return;
     ensureAudio();
     playShotSound();
-
-    const startX = player.x;
-    const startY = player.y - 0.035;
-
-    game.lasers.push({
-      x:startX,
-      y:startY,
-      targetY:0,
-      speed:1.2, // в долях экрана за секунду
-      life:0,
-      // сохраняем, кто выстрелил и в какое время, чтобы разобраться при попадании
-      fromPlayer:true
-    });
+    const y0 = player.y - 0.035;
+    game.lasers.push({ x:player.x, y:y0, prevY:y0, speed:1100, life:0 });
   }
 
-  // вызывается, когда лазер долетел до метеорита
-  function resolveLaserHit(laser, meteor) {
-    game.awaitingResolution = true;
-
-    const isCorrect = meteor.value === game.question.answer;
-
+  function resolveHit(target) {
+    const isCorrect = target.value === game.question.answer;
     if (isCorrect) {
       registerAnswer(true, game.question);
-      explodeMeteor(meteor, true);
+      explodeMeteor(target, true);
       game.score += 100 + Math.min(400, game.streak*10) + game.level*15;
       if (game.score >= 5000) unlockAchievement('legend');
       if (game.score >= 1000) unlockAchievement('score1000');
 
-      const levelProgress = (saveData.correctAnswers - game.levelCorrectAtStart);
-      if (levelProgress > 0 && levelProgress % 10 === 0) {
-        advanceLevel();
-      } else {
-        // после правильного ответа — новые метеориты
-        setTimeout(() => {
-          if (!game.running) return;
-          game.awaitingResolution = false;
-          nextQuestion();
-        }, 200);
-      }
+      const levelProgress = saveData.correctAnswers - game.levelCorrectAtStart;
+      if (levelProgress > 0 && levelProgress % 10 === 0) advanceLevel();
+      else nextQuestion();
       saveProgress();
       updateHud();
     } else {
       registerAnswer(false, game.question);
-      explodeMeteor(meteor, false);
+      explodeMeteor(target, false);
       loseLife('Неверный ответ — минус жизнь');
-      setTimeout(() => {
-        if (!game.running) return;
-        game.awaitingResolution = false;
-        nextQuestion();
-      }, 320);
+      setTimeout(() => { if (game.running) nextQuestion(); }, 260);
     }
   }
 
   function explodeMeteor(meteor, correct) {
     const x = meteor.x * canvas.clientWidth;
     const y = meteor.y * canvas.clientHeight;
-
     for (let i=0;i<(correct ? 28 : 18);i++) {
       const angle = Math.random()*Math.PI*2;
       const speed = randomInt(80,260);
       game.particles.push({
-        x,y,
-        vx:Math.cos(angle)*speed,
-        vy:Math.sin(angle)*speed,
-        life:0,
-        maxLife:0.45+Math.random()*0.65,
-        size:2+Math.random()*4,
+        x, y, vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed,
+        life:0, maxLife:0.45+Math.random()*0.65, size:2+Math.random()*4,
         hue:correct ? randomInt(180,220) : randomInt(0,35)
       });
     }
@@ -1431,26 +801,15 @@
     playHitSound(correct);
   }
 
-  // =========================================================
-  // Input
-  // =========================================================
-
+  // ---------- Input ----------
   function setPlayerTarget(clientX) {
     const rect = canvas.getBoundingClientRect();
     if (!rect.width) return;
     player.targetX = Math.min(0.94, Math.max(0.06, (clientX - rect.left) / rect.width));
   }
 
-  canvas.addEventListener('mousemove', (e) => {
-    if (!game.running) return;
-    setPlayerTarget(e.clientX);
-  });
-
-  canvas.addEventListener('click', (e) => {
-    if (!game.running) return;
-    setPlayerTarget(e.clientX);
-    shoot();
-  });
+  canvas.addEventListener('mousemove', (e) => { if (game.running) setPlayerTarget(e.clientX); });
+  canvas.addEventListener('click', (e) => { if (!game.running) return; setPlayerTarget(e.clientX); shoot(); });
 
   canvas.addEventListener('touchstart', (e) => {
     if (!game.running) return;
@@ -1475,26 +834,13 @@
   }, {passive:false});
 
   window.addEventListener('keydown', (e) => {
-    if (e.code === 'ArrowLeft') {
-      player.targetX = Math.max(0.06, player.targetX - 0.05);
-      e.preventDefault();
-    } else if (e.code === 'ArrowRight') {
-      player.targetX = Math.min(0.94, player.targetX + 0.05);
-      e.preventDefault();
-    } else if (e.code === 'Space') {
-      if (game.running && !game.paused) {
-        shoot();
-        e.preventDefault();
-      }
-    } else if (e.code === 'Escape') {
-      if (game.running) togglePause();
-    }
+    if (e.code === 'ArrowLeft') { player.targetX = Math.max(0.06, player.targetX - 0.05); e.preventDefault(); }
+    else if (e.code === 'ArrowRight') { player.targetX = Math.min(0.94, player.targetX + 0.05); e.preventDefault(); }
+    else if (e.code === 'Space') { if (game.running && !game.paused) { shoot(); e.preventDefault(); } }
+    else if (e.code === 'Escape') { if (game.running) togglePause(); }
   });
 
-  fireButton.addEventListener('click', () => {
-    ensureAudio();
-    shoot();
-  });
+  fireButton.addEventListener('click', () => { ensureAudio(); shoot(); });
 
   backButton.addEventListener('click', () => {
     if (!game.running) return;
@@ -1512,14 +858,9 @@
     showToast(game.paused ? 'Пауза' : 'Продолжаем!');
   }
 
-  // =========================================================
-  // Rendering
-  // =========================================================
-
+  // ---------- Rendering ----------
   function drawBackground(dt) {
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
-
+    const w = canvas.clientWidth, h = canvas.clientHeight;
     const grad = ctx.createLinearGradient(0,0,0,h);
     grad.addColorStop(0,'#030611');
     grad.addColorStop(0.55,'#071126');
@@ -1529,23 +870,22 @@
 
     const t = performance.now()*0.001;
 
-    const nebula1 = ctx.createRadialGradient(w*0.2,h*0.2,0,w*0.2,h*0.2,w*0.45);
-    nebula1.addColorStop(0,'rgba(68,120,255,.09)');
-    nebula1.addColorStop(1,'rgba(68,120,255,0)');
-    ctx.fillStyle = nebula1;
+    const n1 = ctx.createRadialGradient(w*0.2,h*0.2,0,w*0.2,h*0.2,w*0.45);
+    n1.addColorStop(0,'rgba(68,120,255,.09)');
+    n1.addColorStop(1,'rgba(68,120,255,0)');
+    ctx.fillStyle = n1;
     ctx.fillRect(0,0,w,h);
 
-    const nebula2 = ctx.createRadialGradient(w*0.8,h*0.72,0,w*0.8,h*0.72,w*0.34);
-    nebula2.addColorStop(0,'rgba(182,82,255,.07)');
-    nebula2.addColorStop(1,'rgba(182,82,255,0)');
-    ctx.fillStyle = nebula2;
+    const n2 = ctx.createRadialGradient(w*0.8,h*0.72,0,w*0.8,h*0.72,w*0.34);
+    n2.addColorStop(0,'rgba(182,82,255,.07)');
+    n2.addColorStop(1,'rgba(182,82,255,0)');
+    ctx.fillStyle = n2;
     ctx.fillRect(0,0,w,h);
 
     for (const s of game.stars) {
       s.y += s.speed * dt * 0.03;
       if (s.y > h + 2) s.y = -2;
-      const twinkle = 0.65 + 0.35*Math.sin(t*1.4+s.phase);
-      ctx.globalAlpha = s.alpha * twinkle;
+      ctx.globalAlpha = s.alpha * (0.65 + 0.35*Math.sin(t*1.4+s.phase));
       ctx.fillStyle = '#e6f4ff';
       ctx.beginPath();
       ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
@@ -1556,14 +896,12 @@
 
   function drawMeteor(meteor) {
     const w = canvas.clientWidth, h = canvas.clientHeight;
-    const x = meteor.x*w;
-    const y = meteor.y*h;
-    const r = meteor.radius;
+    const x = meteor.x*w, y = meteor.y*h, r = meteor.radius;
 
     ctx.save();
     ctx.translate(x,y);
-    ctx.rotate(meteor.rotation);
 
+    // хвост (не вращается)
     const tail = ctx.createLinearGradient(0,-r,0,r*2.1);
     tail.addColorStop(0,'rgba(255,255,255,0)');
     tail.addColorStop(0.5,`hsla(${meteor.hue},100%,70%,.18)`);
@@ -1577,37 +915,52 @@
     ctx.closePath();
     ctx.fill();
 
+    // камень (вращается)
+    ctx.save();
+    ctx.rotate(meteor.rotation);
     const body = ctx.createRadialGradient(-r*0.25,-r*0.35,r*.2,r*.1,r*.1,r*1.25);
     body.addColorStop(0,`hsl(${meteor.hue},95%,72%)`);
     body.addColorStop(.35,`hsl(${meteor.hue},85%,58%)`);
     body.addColorStop(1,`hsl(${(meteor.hue+35)%360},60%,28%)`);
     ctx.fillStyle = body;
-
     ctx.beginPath();
     const points = 9;
     for (let i=0;i<points;i++) {
       const angle = i/points*Math.PI*2;
       const rr = r*(0.86 + (i%2)*0.13);
-      const px = Math.cos(angle)*rr;
-      const py = Math.sin(angle)*rr;
+      const px = Math.cos(angle)*rr, py = Math.sin(angle)*rr;
       if (i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
     }
     ctx.closePath();
     ctx.fill();
-
     ctx.strokeStyle = 'rgba(255,255,255,.42)';
     ctx.lineWidth = 2;
     ctx.stroke();
+    ctx.restore();
 
+    // число — всегда прямо, не вращается
+    const str = String(meteor.value);
+    const fontSize = str.length > 3 ? Math.max(13, r*0.45) : str.length > 2 ? Math.max(16, r*0.55) : Math.max(18, r*.62);
     ctx.fillStyle = '#fff';
     ctx.shadowBlur = 12;
     ctx.shadowColor = 'rgba(255,255,255,.65)';
-    const str = String(meteor.value);
-    const fontSize = str.length > 3 ? Math.max(13, r*0.45) : str.length > 2 ? Math.max(16, r*0.55) : Math.max(18, r*.62);
     ctx.font = `900 ${fontSize}px system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(str,0,2);
+
+    // подчёркивание, если есть 6 или 9 — чтобы их нельзя было перепутать
+    if (/[69]/.test(str)) {
+      ctx.shadowBlur = 0;
+      const tw = ctx.measureText(str).width;
+      const ly = 2 + fontSize*0.58;
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(-tw/2,ly);
+      ctx.lineTo(tw/2,ly);
+      ctx.stroke();
+    }
 
     ctx.restore();
     ctx.shadowBlur = 0;
@@ -1616,9 +969,7 @@
   function drawPlayer() {
     const w = canvas.clientWidth, h = canvas.clientHeight;
     player.x += (player.targetX-player.x)*0.18;
-
-    const x = player.x*w;
-    const y = player.y*h;
+    const x = player.x*w, y = player.y*h;
 
     ctx.save();
     ctx.translate(x,y);
@@ -1635,10 +986,7 @@
     ctx.strokeStyle = '#80ecff';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(-24,24);
-    ctx.lineTo(-13,-2);
-    ctx.lineTo(13,-2);
-    ctx.lineTo(24,24);
+    ctx.moveTo(-24,24); ctx.lineTo(-13,-2); ctx.lineTo(13,-2); ctx.lineTo(24,24);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
@@ -1648,10 +996,7 @@
     cockpit.addColorStop(1,'#59cfff');
     ctx.fillStyle = cockpit;
     ctx.beginPath();
-    ctx.moveTo(-14,4);
-    ctx.lineTo(-9,-22);
-    ctx.lineTo(9,-22);
-    ctx.lineTo(14,4);
+    ctx.moveTo(-14,4); ctx.lineTo(-9,-22); ctx.lineTo(9,-22); ctx.lineTo(14,4);
     ctx.closePath();
     ctx.fill();
 
@@ -1661,26 +1006,23 @@
     ctx.fillRect(-2,-41,4,5);
 
     ctx.fillStyle = '#a46cff';
-    ctx.beginPath();
-    ctx.moveTo(-18,24); ctx.lineTo(-11,38); ctx.lineTo(-5,24); ctx.closePath(); ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(5,24); ctx.lineTo(11,38); ctx.lineTo(18,24); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-18,24); ctx.lineTo(-11,38); ctx.lineTo(-5,24); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(5,24); ctx.lineTo(11,38); ctx.lineTo(18,24); ctx.closePath(); ctx.fill();
 
     ctx.restore();
   }
 
   function drawLaser(laser) {
     const w = canvas.clientWidth, h = canvas.clientHeight;
-    const x = laser.x*w;
-    const y = laser.y*h;
+    const x = laser.x*w, y = laser.y*h;
     ctx.save();
     ctx.strokeStyle = 'rgba(123,246,255,.95)';
     ctx.shadowBlur = 18;
     ctx.shadowColor = '#63e6ff';
     ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.moveTo(x,y);
-    ctx.lineTo(x,y-42);
+    ctx.moveTo(x,y);        // «голова» снаряда сверху
+    ctx.lineTo(x,y+36);
     ctx.stroke();
     ctx.restore();
     ctx.shadowBlur = 0;
@@ -1688,8 +1030,7 @@
 
   function drawParticles() {
     for (const p of game.particles) {
-      const alpha = Math.max(0,1-p.life/p.maxLife);
-      ctx.globalAlpha = alpha;
+      ctx.globalAlpha = Math.max(0,1-p.life/p.maxLife);
       ctx.fillStyle = `hsl(${p.hue},100%,70%)`;
       ctx.fillRect(p.x-p.size/2,p.y-p.size/2,p.size,p.size);
     }
@@ -1699,11 +1040,8 @@
   function drawCrosshair() {
     if (!game.running) return;
     const w = canvas.clientWidth, h = canvas.clientHeight;
-    const x = player.x*w;
-    const y = h*0.79;
-
     ctx.save();
-    ctx.translate(x,y);
+    ctx.translate(player.x*w, h*0.79);
     ctx.strokeStyle = 'rgba(130,243,255,.55)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
@@ -1716,104 +1054,50 @@
     ctx.restore();
   }
 
-  // =========================================================
-  // Game update loop
-  // =========================================================
-
+  // ---------- Update loop ----------
   function update(dt) {
     if (!game.running || game.paused) return;
-
     const w = canvas.clientWidth, h = canvas.clientHeight;
 
-    // Спавн дополнительных метеоритов, если кто-то улетел/взорвался,
-    // но НЕ во время ожидания разрешения выстрела
-    if (!game.awaitingResolution) {
-      game.spawnTimer += dt*1000;
-      const targetCount = levelConfig(game.level).meteors;
-
-      if (game.spawnTimer >= game.spawnInterval && game.meteors.length < targetCount) {
-        game.spawnTimer = 0;
-        const takenXs = game.meteors.map(m => m.x);
-        const existingValues = new Set(game.meteors.map(m => m.value));
-        const candidates = answerVariants(game.question, prefs.difficulty).filter(v => !existingValues.has(v));
-
-        const needed = targetCount - game.meteors.length;
-        const usableWidth = 0.80;
-        const total = takenXs.length + needed;
-        const minGap = Math.min(0.20, usableWidth / Math.max(1, total - 1) * 0.95);
-
-        for (let i = 0; i < needed && candidates.length; i++) {
-          const value = candidates.shift();
-          const x = pickMeteorX(takenXs, minGap);
-          takenXs.push(x);
-          game.meteors.push({
-            value,
-            x,
-            y:-0.08 - Math.random()*0.15,
-            radius:30 + Math.random()*6,
-            speed:game.fallSpeed*(0.9+Math.random()*0.22),
-            hue:Math.random()*360,
-            rotation:Math.random()*Math.PI*2,
-            spin:(Math.random()-.5)*0.5,
-            dying:false
-          });
-        }
-      }
-    }
-
-    // Движение метеоритов
     for (const m of game.meteors) {
       m.y += (m.speed/h)*dt;
       m.rotation += m.spin*dt;
     }
 
-    // Движение лазеров + проверка столкновения с метеоритами
-    for (const laser of game.lasers) {
-      const prevY = laser.y;
-      laser.y -= laser.speed * dt;
-      laser.life += dt;
-
-      // на пути лазера (по X) ищем метеорит, через который он только что прошёл
-      let hit = null;
-      for (const m of game.meteors) {
-        const dx = Math.abs(m.x - laser.x);
-        if (dx < 0.06) {
-          const radiusNorm = m.radius / canvas.clientWidth;
-          const topEdge = m.y - radiusNorm;
-          // если лазер пересёк верхнюю границу метеорита на этом кадре
-          if (prevY > topEdge && laser.y <= topEdge && !m.dying) {
-            hit = m;
-            break;
-          }
-        }
-      }
-
-      if (hit) {
-        laser.life = 999; // помечаем лазер к удалению
-        resolveLaserHit(laser, hit);
-      }
-    }
-
-    game.lasers = game.lasers.filter(l => l.y > -0.1 && l.life < 0.7);
-
-    // Если правильный метеорит упал
-    const correctMeteor = game.meteors.find(m => m.value === game.question.answer && !m.dying);
-    if (correctMeteor && correctMeteor.y > 0.84 && !game.awaitingResolution) {
-      game.awaitingResolution = true;
+    const correctMeteor = game.meteors.find(m => m.value === game.question.answer);
+    if (correctMeteor && correctMeteor.y > 0.84) {
       registerAnswer(false, game.question);
       explodeMeteor(correctMeteor,false);
       loseLife('Правильный метеорит упал!');
       saveProgress();
-      if (game.running) {
-        setTimeout(() => {
-          if (!game.running) return;
-          game.awaitingResolution = false;
-          nextQuestion();
-        }, 240);
-      }
+      if (game.running) setTimeout(() => { if (game.running) nextQuestion(); }, 220);
     }
 
-    // Частицы
+    // движение снарядов
+    for (const l of game.lasers) {
+      l.prevY = l.y;
+      l.y -= (l.speed/h)*dt;
+      l.life += dt;
+    }
+
+    // столкновение снаряда с метеоритом (проверка по пройденному за кадр отрезку)
+    for (const l of game.lasers) {
+      const lx = l.x*w;
+      const hit = game.meteors.find(m => {
+        const my = m.y*h;
+        return my > 0 &&
+               Math.abs(lx - m.x*w) < m.radius*0.9 &&
+               my - m.radius <= l.prevY*h &&
+               my + m.radius >= l.y*h;
+      });
+      if (hit) {
+        game.lasers = game.lasers.filter(x => x !== l);
+        resolveHit(hit);
+        break;
+      }
+    }
+    game.lasers = game.lasers.filter(l => l.y > -0.1 && l.life < 0.9);
+
     for (const p of game.particles) {
       p.life += dt;
       p.x += p.vx*dt;
@@ -1828,12 +1112,8 @@
 
   function draw(dt) {
     drawBackground(dt);
-
     ctx.save();
-    if (game.shake > 0) {
-      ctx.translate((Math.random()-.5)*game.shake,(Math.random()-.5)*game.shake);
-    }
-
+    if (game.shake > 0) ctx.translate((Math.random()-.5)*game.shake,(Math.random()-.5)*game.shake);
     if (game.running) {
       for (const m of game.meteors) drawMeteor(m);
       for (const l of game.lasers) drawLaser(l);
@@ -1852,37 +1132,29 @@
     game.animationId = requestAnimationFrame(loop);
   }
 
-  // =========================================================
-  // Statistics & achievements UI
-  // =========================================================
-
+  // ---------- Statistics & achievements UI ----------
   function renderStats() {
     const total = saveData.correctAnswers + saveData.wrongAnswers;
     const accuracy = total > 0 ? (saveData.correctAnswers / total * 100).toFixed(1) : '0.0';
-
-    $('statsGrid').innerHTML = `
-      <div class="stat-card"><div class="stat-label">Рекорд</div><div class="stat-value">${saveData.highScore}</div></div>
-      <div class="stat-card"><div class="stat-label">Текущий счёт</div><div class="stat-value">${game.running ? game.score : 0}</div></div>
-      <div class="stat-card"><div class="stat-label">Текущий сохранённый уровень</div><div class="stat-value">${saveData.level}</div></div>
-      <div class="stat-card"><div class="stat-label">Правильных</div><div class="stat-value">${saveData.correctAnswers}</div></div>
-      <div class="stat-card"><div class="stat-label">Неправильных</div><div class="stat-value">${saveData.wrongAnswers}</div></div>
-      <div class="stat-card"><div class="stat-label">Точность</div><div class="stat-value">${accuracy}%</div></div>
-      <div class="stat-card"><div class="stat-label">Лучшая серия</div><div class="stat-value">${saveData.bestStreak}</div></div>
-      <div class="stat-card"><div class="stat-label">Сложение</div><div class="stat-value">${saveData.additionSolved}</div></div>
-      <div class="stat-card"><div class="stat-label">Умножение</div><div class="stat-value">${saveData.multiplicationSolved}</div></div>
-    `;
+    const card = (label, value) => `<div class="stat-card"><div class="stat-label">${label}</div><div class="stat-value">${value}</div></div>`;
+    $('statsGrid').innerHTML =
+      card('Рекорд', saveData.highScore) +
+      card('Текущий счёт', game.running ? game.score : 0) +
+      card('Текущий сохранённый уровень', saveData.level) +
+      card('Правильных', saveData.correctAnswers) +
+      card('Неправильных', saveData.wrongAnswers) +
+      card('Точность', accuracy + '%') +
+      card('Лучшая серия', saveData.bestStreak) +
+      card('Сложение', saveData.additionSolved) +
+      card('Умножение', saveData.multiplicationSolved);
 
     renderHeatmap();
-
-    const unlocked = saveData.unlockedAchievements.length;
-    $('statsAchievementProgress').textContent = `Разблокировано: ${unlocked} из ${ACHIEVEMENTS.length}`;
+    $('statsAchievementProgress').textContent = `Разблокировано: ${saveData.unlockedAchievements.length} из ${ACHIEVEMENTS.length}`;
   }
 
   function renderHeatmap() {
-    const wrap = $('heatmap');
     let html = '<div class="heatmap"><div class="heat-head"></div>';
     for (let x=1;x<=10;x++) html += `<div class="heat-head">${x}</div>`;
-
     for (let a=1;a<=10;a++) {
       html += `<div class="heat-head">${a}</div>`;
       for (let b=1;b<=10;b++) {
@@ -1896,8 +1168,7 @@
         html += `<div class="heat-cell ${cls}" title="${a} × ${b}: ${item.correct} правильных, ${item.wrong} ошибок">${a*b}</div>`;
       }
     }
-    html += '</div>';
-    wrap.innerHTML = html;
+    $('heatmap').innerHTML = html + '</div>';
   }
 
   function renderAchievements() {
@@ -1911,29 +1182,21 @@
             <div class="small">${a.description}</div>
             <div class="small" style="margin-top:5px">${unlocked ? 'Разблокировано' : 'Ещё не получено'}</div>
           </div>
-        </div>
-      `;
+        </div>`;
     }).join('');
   }
 
-  // =========================================================
-  // Mode / difficulty UI
-  // =========================================================
-
+  // ---------- Mode / difficulty UI ----------
   function renderModeGrid() {
     $('modeGrid').innerHTML = MODES.map(m => `
       <div class="mode-card ${prefs.mode === m.id ? 'selected' : ''}" data-mode="${m.id}">
         <div class="mode-title">${m.icon} ${m.name}</div>
         <div class="mode-desc">${m.desc}</div>
-      </div>
-    `).join('');
-
+      </div>`).join('');
     $('modeGrid').querySelectorAll('.mode-card').forEach(card => {
       card.addEventListener('click', () => {
         prefs.mode = card.dataset.mode;
-        savePrefs();
-        renderModeGrid();
-        updateModeCurrent();
+        savePrefs(); renderModeGrid(); updateModeCurrent();
       });
     });
   }
@@ -1943,15 +1206,11 @@
       <button class="diff-btn ${prefs.difficulty === d.id ? 'selected' : ''}" data-diff="${d.id}">
         <div class="diff-title">${d.icon} ${d.name}</div>
         <div class="diff-desc">${d.desc}</div>
-      </button>
-    `).join('');
-
+      </button>`).join('');
     $('diffRow').querySelectorAll('.diff-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         prefs.difficulty = btn.dataset.diff;
-        savePrefs();
-        renderDiffRow();
-        updateModeCurrent();
+        savePrefs(); renderDiffRow(); updateModeCurrent();
       });
     });
   }
@@ -1962,68 +1221,22 @@
     $('modeCurrent').innerHTML = `Выбрано: <strong>${mode ? mode.icon + ' ' + mode.name : '—'}</strong> · <strong>${diff ? diff.name : '—'}</strong>`;
   }
 
-  // =========================================================
-  // Button handlers
-  // =========================================================
-
-  $('startBtn').addEventListener('click', () => {
-    ensureAudio();
-    startGame();
+  // ---------- Button handlers ----------
+  $('startBtn').addEventListener('click', () => { ensureAudio(); startGame(); });
+  $('statsBtn').addEventListener('click', () => { renderStats(); showScreen('stats'); });
+  $('achievementsBtn').addEventListener('click', () => { renderAchievements(); showScreen('achievements'); });
+  $('settingsBtn').addEventListener('click', () => { updateSoundButton(); updateStorageStatus(); showScreen('settings'); });
+  ['backFromStats','backFromAchievements','backFromSettings'].forEach(id => {
+    $(id).addEventListener('click', () => { updateMenuStats(); showScreen('menu'); });
   });
-
-  $('statsBtn').addEventListener('click', () => {
-    renderStats();
-    showScreen('stats');
-  });
-
-  $('achievementsBtn').addEventListener('click', () => {
-    renderAchievements();
-    showScreen('achievements');
-  });
-
-  $('settingsBtn').addEventListener('click', () => {
-    updateSoundButton();
-    updateStorageStatus();
-    showScreen('settings');
-  });
-
-  $('backFromStats').addEventListener('click', () => {
-    updateMenuStats();
-    showScreen('menu');
-  });
-
-  $('backFromAchievements').addEventListener('click', () => {
-    updateMenuStats();
-    showScreen('menu');
-  });
-
-  $('backFromSettings').addEventListener('click', () => {
-    updateMenuStats();
-    showScreen('menu');
-  });
-
   $('resetBtn').addEventListener('click', () => {
-    const ok = window.confirm('Сбросить весь прогресс Math Havoc? Это действие нельзя отменить.');
-    if (ok) resetProgress();
+    if (window.confirm('Сбросить весь прогресс Math Havoc? Это действие нельзя отменить.')) resetProgress();
   });
+  $('soundToggle').addEventListener('click', () => setSoundEnabled(!soundEnabled()));
+  $('restartBtn').addEventListener('click', () => startGame());
+  $('menuFromGameOver').addEventListener('click', () => { updateMenuStats(); showScreen('menu'); });
 
-  $('soundToggle').addEventListener('click', () => {
-    setSoundEnabled(!soundEnabled());
-  });
-
-  $('restartBtn').addEventListener('click', () => {
-    startGame();
-  });
-
-  $('menuFromGameOver').addEventListener('click', () => {
-    updateMenuStats();
-    showScreen('menu');
-  });
-
-  // =========================================================
-  // Auto-save
-  // =========================================================
-
+  // ---------- Auto-save ----------
   setInterval(() => {
     if (game.running) {
       saveData.highScore = Math.max(saveData.highScore, game.score);
@@ -2033,14 +1246,9 @@
   }, 5000);
 
   window.addEventListener('beforeunload', () => saveProgress(true));
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) saveProgress(true);
-  });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) saveProgress(true); });
 
-  // =========================================================
-  // Init
-  // =========================================================
-
+  // ---------- Init ----------
   function init() {
     loadSave();
     updateMenuStats();
@@ -2059,7 +1267,6 @@
   }
 
   window.addEventListener('resize', resizeCanvas);
-
   init();
 })();
 </script>
