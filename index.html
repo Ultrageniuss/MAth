@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-<title>Math Havoc</title>
+<title>Math Haoc</title>
 <style>
 :root{--bg:#050816;--text:#f7fbff;--muted:#a9b8d4;--accent:#63e6ff;--accent-2:#a46cff;--border:rgba(121,171,255,.25)}
 *{box-sizing:border-box}
@@ -90,7 +90,7 @@ button.danger{background:linear-gradient(135deg,#ff8396,#ff5f76);color:#25070d}
 </head>
 <body>
 <div id="app">
-  <canvas id="gameCanvas" aria-label="Игровое поле Math Havoc"></canvas>
+  <canvas id="gameCanvas" aria-label="Игровое поле Math Haoc"></canvas>
 
   <div id="gameHud" class="hidden">
     <div class="hud-top">
@@ -116,7 +116,7 @@ button.danger{background:linear-gradient(135deg,#ff8396,#ff5f76);color:#25070d}
 
   <section id="menuScreen" class="screen">
     <div class="panel">
-      <h1 class="title">MATH HAVOC</h1>
+      <h1 class="title">Math Haoc</h1>
       <p class="subtitle">Космическая тренировка математики. Выбери режим и сложность — и вперёд!</p>
       <div class="hero-stats" id="menuStats"></div>
       <div class="section"><h3>🎯 Что тренируем</h3><div class="mode-grid" id="modeGrid"></div></div>
@@ -1258,7 +1258,7 @@ button.danger{background:linear-gradient(135deg,#ff8396,#ff5f76);color:#25070d}
     $(id).addEventListener('click', () => { updateMenuStats(); showScreen('menu'); });
   });
   $('resetBtn').addEventListener('click', () => {
-    if (window.confirm('Сбросить весь прогресс Math Havoc? Это действие нельзя отменить.')) resetProgress();
+    if (window.confirm('Сбросить весь прогресс Math Haoc? Это действие нельзя отменить.')) resetProgress();
   });
   $('soundToggle').addEventListener('click', () => setSoundEnabled(!soundEnabled()));
   $('restartBtn').addEventListener('click', () => startGame());
