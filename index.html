@@ -267,6 +267,11 @@ button.danger{background:linear-gradient(135deg,#ff8396,#ff5f76);color:#25070d}
   let audioCtx = null, masterGain = null, storageAvailable = true, toastTimer = null;
 
   const player = { x:0.5, y:0.9, width:48, height:62, targetX:0.5, color:'#63e6ff' };
+  const LASER_ZONE = {
+  left: 0.05,    // левая граница зоны — 5% экрана
+  right: 0.95,   // правая граница зоны — 95% экрана
+  width: 28      // ширина лазера
+};
 
   // ---------- LocalStorage ----------
   function loadSave() {
